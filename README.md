@@ -15,8 +15,9 @@ pip install .
 ```
 
 # Use Case
+- Loading a .hyxml
 ```python
-from pyC2E2 import FileHandler
+from pyC2E2 import *
 
 # Using FileHandler to load a hyxml file
 automata, properties = FileHandler.load_model("TotalMotionV2.hyxml")
@@ -26,4 +27,20 @@ automata, properties = FileHandler.load_model("TotalMotionV2.hyxml")
 # You can display info of an automaton by directly printing automaton's name
 print(automata)
 print(properties)
+```
+
+- Operations related to RectangleSet()
+```python
+from pyC2E2 import *
+
+# Empty Set
+R1 = RectangleSet()
+
+# Creating Initial Set from string expressions
+R2 = RectangleSet("Mode1: x>=1 && x<=3 && y>=-1 && y<=0")
+# or Unsafe Set
+R3 = RectangleSet("x>10")
+
+# Assign/Update new expressions to the Set
+R3.set_expression("x>5")
 ```
