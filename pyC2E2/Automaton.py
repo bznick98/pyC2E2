@@ -27,7 +27,8 @@ class Automaton:
     def __repr__(self):
         """ Display Automaton Info """
         DISPLAY_INFO = \
-            "\nAutomaton Name: {}\n".format(self.name) + \
+            "\n=== Automaton() ===\n" + \
+            "Name: {}\n".format(self.name) + \
             "Variable List: {}\n".format(self.var_names()) + \
             "Mode List: {}\n".format(self.mode_names()) + \
             "Transition List: {}\n".format(self.transition_list)

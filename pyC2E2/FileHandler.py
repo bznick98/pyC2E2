@@ -191,11 +191,9 @@ class FileHandler:
             p.initial_set_raw = FileHandler.clean_eq(prop.get('initialSet'))
             p.unsafe_set_raw = FileHandler.clean_eq(prop.get('unsafeSet'))
 
-            # Convert RAW expression to RectangleSet
+            # Convert RAW Expressions to RectangleSet
             p.initial_set = RectangleSet(p.initial_set_raw)
-            # Basic Error Checking (Syntax & Boundedness)
-            p.initial_set.check_initial_set_syntax()
-            p.initial_set.check_initial_set_boundedness()
+            p.unsafe_set = RectangleSet(p.unsafe_set_raw)
 
             # Handle properties parameters
             param = prop.find('parameters')
@@ -217,6 +215,10 @@ class FileHandler:
                     p.k_value = 0.0
                 else:
                     p.k_value = float(k_value)
+
+            # Validate some of the attributes of the Property
+            p.validate_initial()
+            # Initial Set/Unsafe Set will be validated before doing Verification
 
             prop_list.append(p)
 

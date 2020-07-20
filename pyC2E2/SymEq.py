@@ -141,7 +141,7 @@ class SymEq:
         return True
 
     @staticmethod
-    def check_expression_syntax(raw_expressions, target="Initial Set"):
+    def check_expression_syntax(raw_expressions, isInitialSet=False):
         """ Check Initial Set Syntax """
         # Regex building blocks
         flt = '(-?(\d*\.?\d+))'
@@ -162,10 +162,13 @@ class SymEq:
         re_is = init_set
         re_us = unsafe_set
 
-        # target map
-        target_dict = {'Initial Set' : re_is, 'Unsafe Set' : re_us}
+        # checking Mode or not checking Mode
+        if isInitialSet:
+            checking_target = re_is
+        else:
+            checking_target = re_us
 
-        match = re.match(target_dict[target], raw_expressions)
+        match = re.match(checking_target, raw_expressions)
 
         if(match == None):
             return False

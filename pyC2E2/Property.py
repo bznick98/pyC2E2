@@ -40,10 +40,11 @@ class Property():
     def __repr__(self):
         """ Display Property Information """
         DISPLAY_INFO = \
-            "\nProperty Name: {} [Valid: {}]\n".format(self.name, self.name_valid) + \
-            "Time Step: {} [Valid: {}]\n".format(self.time_step, self.time_step_valid) + \
-            "Time Horizon: {} [Valid: {}]\n".format(self.time_horizon, self.time_horizon_valid) + \
-            "K Value: {} [Valid: {}]\n".format(self.k_value, self.k_value_valid) + \
+            "\n=== Property() ===\n" + \
+            "Name: {}           [Valid: {}]\n".format(self.name, self.name_valid) + \
+            "Time Step: {}      [Valid: {}]\n".format(self.time_step, self.time_step_valid) + \
+            "Time Horizon: {}   [Valid: {}]\n".format(self.time_horizon, self.time_horizon_valid) + \
+            "K Value: {}        [Valid: {}]\n".format(self.k_value, self.k_value_valid) + \
             "Initial Set Raw: {} [Valid: {}]\n".format(self.initial_set_raw, self.initial_set_valid) + \
             "Unsafe Set Raw: {} [Valid: {}]\n".format(self.unsafe_set_raw, self.unsafe_set_valid) + \
             "Simulator: {}\n".format(self.simulator)
@@ -61,6 +62,23 @@ class Property():
                 self.k_value_valid and\
                 self.initial_set_valid and\
                 self.unsafe_set_valid)
+
+    def validate_initial(self):
+        '''
+        Only validate attributes that are available to validate during load property
+
+        Args:
+            None
+        Returns:
+            Set flags indicating the validity of each attribute
+        '''
+
+        self.validate_name()
+        # self.validate_type(self.type)
+        self.validate_time_step()
+        self.validate_time_horizon()
+        self.validate_k_value()
+        return 
 
     def validate_all(self, automaton):
         '''

@@ -45,57 +45,93 @@ class RectangleSet(Set):
           |           |
         for >/>=   for </<=
     '''
-    def __init__(self, expressions=None, Eq_Matrix=None):
+    def __init__(self, expression=None, Eq_Matrix=None):
         """ Construct Set Using either expressions or Eq Matrix(a, b, eq) """
         self.name = "RectangleSet Default Name"
-        self.raw_expressions = expressions
-        if expressions is not None:
-            self.raw_to_matrix()
+        self.raw_expression = expression
+        self.initial_mode = None
+        self.aMatrix = None
+        self.bMatrix = None
+        self.eqMatrix = None
+
+        # process input expressions if user gives one
+        if expression is not None:
+            self.set_expression(expression)
         elif Eq_Matrix is not None:
             self.aMatrix = Eq_Matrix[0]
             self.bMatrix = Eq_Matrix[1]
             self.eqMatrix = Eq_Matrix[2]
-        else:
-            self.aMatrix = None
-            self.bMatrix = None
-            self.eqMatrix = None   
+
 
     def __repr__(self):
-        return self.raw_expressions 
+        DISPLAY_INFO = '\n=== RectangleSet() ===\n'
+        if self.raw_expression is not None:
+            DISPLAY_INFO += '[Raw Expression]: '
+            DISPLAY_INFO += self.raw_expression + "\n"
+            if self.initial_mode is not None:
+                DISPLAY_INFO += "[Initial Mode]: "
+                DISPLAY_INFO += self.initial_mode +"\n"
+        else:
+            DISPLAY_INFO += "[Empty Set]: No Raw Expressions Available."
+        return DISPLAY_INFO
+
+    def set_expression(self, expression):
+        """ Add expressions to the Rectangle Set and convert them to matrix representations """
+
+        self.raw_expression = expression
+
+        # Check if expression contains initial mode
+        splited = self.raw_expression.split(":")
+        if len(splited) == 1:
+            # CHECKING new expression validity
+            self.check_syntax(isInitialSet=False)
+            # string contains initial mode
+            self.initial_mode = None
+            # no initial mode is provided(or maybe it's unsafe set, doesn't need a initial mode)
+            self.aMatrix, self.bMatrix, self.eqMatrix = self.raw_to_matrix()
+        else:
+            # CHECKING new expression validity
+            self.check_syntax(isInitialSet=True)
+            # string contains initial mode
+            self.initial_mode = splited[0].strip()
+            self.raw_expression = splited[1].strip()
+            # convert the expression to Matrix
+            self.aMatrix, self.bMatrix, self.eqMatrix = self.raw_to_matrix()
+        
+        if self.initial_mode is not None:
+        # if expression has mode information, then it must be initial set, so boundedness has to be checked
+            self.check_boundedness()
 
     def raw_to_matrix(self):
         """ Using SymEq's get_eqn_matrix function """
         # extract variable list (initial set guarantees to include all vars)
-        expressions = self.raw_expressions
-        # Remove "Mode information"
-        pure_expressions = expressions.split(":")[1]
-        varList = SymEq.get_var_list(pure_expressions)
-        aMatrix, bMatrix, eqMatrix = SymEq.get_eqn_matrix(pure_expressions, varList)
-        self.aMatrix = aMatrix
-        self.bMatrix = bMatrix
-        self.eqMatrix = eqMatrix
+        expression = self.raw_expression
+        varList = SymEq.get_var_list(expression)
+        return SymEq.get_eqn_matrix(expression, varList)
+
 
     # ERROR CHECKING: Syntax
-    def check_initial_set_syntax(self):
+    def check_syntax(self, isInitialSet=False):
         """ Using SymEq's Check Expression Syntax """
-        expressions = self.raw_expressions
-        if SymEq.check_expression_syntax(expressions, "Initial Set"):
+        expression = self.raw_expression
+        if SymEq.check_expression_syntax(expression, isInitialSet):
             return True
         else:
+            self.raw_expressions = None
             raise Exception("[RectangleSet ERROR]: Syntax NOT valid.")
 
     # ERROR CHECKING: Boundedness
-    def check_initial_set_boundedness(self):
-        """ Using SymEq's Check boundedness """
-        # Remove "Mode information"
-        pure_expressions = self.raw_expressions.split(":")[1]
+    def check_boundedness(self):
+        """ Using SymEq's Check boundedness, Mainly for Initial Set """
         if SymEq.check_boundedness(self.aMatrix,
                                     self.bMatrix,
                                     self.eqMatrix,
-                                    SymEq.get_var_list(pure_expressions)):
+                                    SymEq.get_var_list(self.raw_expression)):
             return True
         else:
-            raise Exception("[RectangleSet ERROR]: Set NOT Bounded.")
+            raise Exception("[RectangleSet ERROR]: (Initial) Set NOT Bounded.")
+    
+    # TODO WRITE Bound check for Unsafe Set
 
         
     
