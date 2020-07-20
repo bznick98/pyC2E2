@@ -2,6 +2,7 @@
 
 # Current Functionalities
 - [x] Be able to load model from .hyxml file.
+- [x] Some Set Operations.
 - [ ] Using C2E2 C++ Backend to do Simualtion/Verification
 
 # Install
@@ -44,3 +45,6 @@ R3 = RectangleSet("x>10")
 # Assign/Update new expressions to the Set
 R3.set_expression("x>5")
 ```
+
+# Some Urgent TODOs
+- [ ] Implement Unsafe Set Bound Checkings! (Avoid like x>5 && x<3).
