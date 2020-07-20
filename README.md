@@ -1,4 +1,3 @@
-# pyC2E2
 
 # Current Functionalities
 - [x] Be able to load model from .hyxml file.
