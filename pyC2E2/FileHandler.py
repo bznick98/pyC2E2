@@ -5,10 +5,11 @@ import os
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
-from .Automaton import *
-from .Property import *
-from .Set import *
-from .SymEq import *
+from pyC2E2.Automaton import Automaton, Mode, DAI, Invariant, Transition, Guard, Action, Variable, ThinVariable
+from pyC2E2.Property import Property
+from pyC2E2.Set import RectangleSet
+from pyC2E2.SymEq import SymEq
+from pyC2E2.constants import *
 
 class FileHandler:
     '''

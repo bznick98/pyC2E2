@@ -9,8 +9,8 @@
 # Guard()
 # Action()
 
-from .constants import *
-from .SymEq import *
+from pyC2E2.constants import *
+from pyC2E2.SymEq import SymEq
 
 class Automaton:
     '''

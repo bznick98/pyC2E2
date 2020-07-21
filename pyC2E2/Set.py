@@ -5,7 +5,7 @@
 import re
 
 from abc import ABC, abstractmethod
-from .SymEq import SymEq
+from pyC2E2.SymEq import SymEq
 
 class Set(ABC):
     '''
