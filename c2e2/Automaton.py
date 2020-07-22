@@ -406,15 +406,19 @@ class DAI:
         self.expr = self.parse()
 
     def __call__(self, raw=None):
-        """ call DAI object with a expression will set the expression to the DAI """
-        self.raw = raw
-        self.expr = self.parse()
+        """ Calling the object directly will set the input expression to DAI """
+        self.set_expression(raw)
 
     def __repr__(self):
         DISPLAY_INFO = "\n=== DAI() ===\n"
         DISPLAY_INFO += "Raw Expression: {}\n".format(self.raw)
         DISPLAY_INFO += "SymPy Equation: {}\n".format(self.expr)
         return DISPLAY_INFO
+
+    def set_expression(self, raw):
+        """ call DAI object with a expression will set the expression to the DAI """
+        self.raw = raw
+        self.expr = self.parse()
     
     def parse(self):
         """ Parsing a raw expression and set its SymPy expression to the object """

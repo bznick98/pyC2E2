@@ -61,7 +61,10 @@ class RectangleSet(Set):
             self.aMatrix = Eq_Matrix[0]
             self.bMatrix = Eq_Matrix[1]
             self.eqMatrix = Eq_Matrix[2]
-
+    
+    def __call__(self, expression):
+        """ Directly Calling the object will set input expression """
+        self.set_expression(expression)
 
     def __repr__(self):
         DISPLAY_INFO = '\n=== RectangleSet() ===\n'

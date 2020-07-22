@@ -15,9 +15,9 @@ pip install .
 ```
 
 # Use Case
-- Loading a .hyxml
+## Loading from a .hyxml file
 ```python
-from pyC2E2 import *
+from c2e2 import *
 
 # Using FileHandler to load a hyxml file
 automata, properties = FileHandler.load_model("TotalMotionV2.hyxml")
@@ -29,9 +29,10 @@ print(automata)
 print(properties)
 ```
 
-- Operations related to RectangleSet()
+## Operations of each Data Type:
+- RectangleSet()
 ```python
-from pyC2E2 import *
+from c2e2 import *
 
 # Empty Set
 R1 = RectangleSet()
@@ -42,7 +43,26 @@ R2 = RectangleSet("Mode1: x>=1 && x<=3 && y>=-1 && y<=0")
 R3 = RectangleSet("x>10")
 
 # Assign/Update new expressions to the Set
-R3.set_expression("x>5")
+R3("x>5")
+# or more explicity R3.set_expression("x>5")
+
+```
+
+- DAI()
+```python
+from c2e2 import *
+
+# Empty DAI Equation
+D1 = DAI()
+
+# Creating DAI from string expressions
+D2 = DAI("x = 3 + y^2")
+D3 = DAI("x = y**2 / z")
+
+# Assign/Update new expressions to the Set
+D3("x = y + 5")
+# or more explicity D3.set_expression("x = y + 5")
+
 ```
 
 # Some Urgent TODOs
