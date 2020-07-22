@@ -2,11 +2,11 @@ import setuptools
 
 
 setuptools.setup(
-    name="pyC2E2",
+    name="c2e2",
     version="0.0.1",
     author="C2E2",
     author_email="author@example.com",
-    description="Currently Can load Model",
+    description="Currently in developing",
     long_description='',
     url="",
     packages=setuptools.find_packages(),
