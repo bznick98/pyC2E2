@@ -42,8 +42,8 @@ class Automaton:
         DISPLAY_INFO = \
             "\n=== Automaton() ===\n" + \
             "Name: {}\n".format(self.name) + \
-            "Variable List: {}\n".format(self.all_var_names) + \
-            "Mode List: {}\n".format(self.all_mode_names) + \
+            "Variable List: {}\n".format(self.var_names) + \
+            "Mode List: {}\n".format(self.mode_names) + \
             "Transition List: {}\n".format(self.transition_list)
         return DISPLAY_INFO
 
@@ -61,6 +61,7 @@ class Automaton:
     def add_mode(self, mode, id=None):
         """ Add a mode to automaton """
         self.mode_list.append(mode)
+        # TODO: PARSE MODE & ALSO ADD VARIABLES TO Automaton
         return
 
     def add_transition(self, tran):
@@ -70,13 +71,14 @@ class Automaton:
 
         
     # Getters
+    # Variables
     @property
-    def all_vars(self):
+    def vars(self):
         """ Return all variable in a list """
         return [var for var in self.variable_list]
 
     @property
-    def all_var_names(self):
+    def var_names(self):
         """ Return all variable names in a list """
         return [var.name for var in self.variable_list]
 
@@ -122,13 +124,61 @@ class Automaton:
         """ Return all variable name whose scope is 'OUTPUT' in a list """
         return [var.name for var in self.output_vars]
 
+    # ThinVariables
     @property
-    def all_mode_names(self):
+    def local_thinvars(self):
+        """ Return all ThinVariable whose scope is 'LOCAL' in a list """
+        local_vars = []
+        for var in self.thinvar_list:
+            if var.scope == LOCAL:
+                local_vars.append(var)
+        return local_vars
+    
+    @property
+    def local_thinvar_names(self):
+        """ Return all variable name whose scope is 'LOCAL' in a list """
+        return [var.name for var in self.local_thinvars]
+
+    @property
+    def input_thinvars(self):
+        """ Return all ThinVariable whose scope is 'INPUT' in a list """
+        input_vars = []
+        for var in self.thinvar_list:
+            if var.scope == INPUT:
+                input_vars.append(var)
+        return input_vars
+    
+    @property
+    def input_thinvar_names(self):
+        """ Return all variable name whose scope is 'INPUT' in a list """
+        return [var.name for var in self.input_thinvars]
+
+    @property
+    def output_thinvars(self):
+        """ Return all variable whose scope is 'OUTPUT' in a list """
+        output_vars = []
+        for var in self.thinvar_list:
+            if var.scope == OUTPUT:
+                output_vars.append(var)
+        return output_vars
+    
+    @property
+    def output_thinvar_names(self):
+        """ Return all variable name whose scope is 'OUTPUT' in a list """
+        return [var.name for var in self.output_thinvars]
+
+    # Modes
+    @property
+    def modes(self):
+        """ Return all modes in a list """
+        return [mode for mode in self.mode_list]
+
+    @property
+    def mode_names(self):
         """ Return all mode names in a list """
         return [mode.name for mode in self.mode_list]
 
-    # REMOVE attributes from automaton
-    # TODO:
+    # TODO: Functions to REMOVE attributes from automaton
 
     # CHECKING automton validity
     def verify_mode_ids(self):
@@ -172,7 +222,7 @@ class Variable:
     scope   - LOCAL/INPUT/OUTPUT, scope of the Variable
     '''
     def __init__(self, name="default_variable",
-                 type=REAL, scope='LOCAL_DATA'):
+                 type=REAL, scope=LOCAL):
         self.name = name
         self.type = type
         self.scope = scope
@@ -234,7 +284,7 @@ class Mode:
         self.id = id
         self.isInitial = isInitial
         # self.initialConditions = []
-        self.linear = None
+        self.linear = True
         self.parent = None
 
     def __repr__(self):
@@ -269,7 +319,37 @@ class Mode:
                 DISPLAY_INFO += "  {}\n".format(inv.raw)
         return DISPLAY_INFO
 
+    @property
+    def dais(self):
+        """ Same as self.dai_list """
+        return self.dai_list
+        
+    @property
+    def invariants(self):
+        """ Same as self.inv_list """
+        return self.inv_list
 
+    # @property
+    # def vars(self):
+    #     """ Return all vars in a list of Variable() """
+    #     var_list = []
+    #     # get all raw expressions
+    #     raw_dai_list = []
+    #     for dai in self.dai_list:
+    #         raw_dai_list.append(dai.raw)
+    #     # extract all variables(repeats)
+    #     for raw_expr in raw_dai_list:
+    #         expr_var_list = SymEq.get_var_list(raw_expr)
+    #         for var in expr_var_list:
+    #             var_list.append(var)
+    #     # remove repeat
+    #     var_list = list(set(var_list))
+    #     # convert to Variable()
+    #     for var in var_list:
+    #         var = Variable(var)
+    #     print(var_list)
+    #     return var_list
+        
     # ADD to mode
     def add_dai(self, dai):
         '''
@@ -379,14 +459,14 @@ class Transition:
     dest    - the destination of the transition
     parent  - TODO: Add definition for this 
     ''' 
-    def __init__(self, guard, actions, id=-1, source=-1, destination=-1):
+    def __init__(self, guard, actions=[], id=0, src_mode=0, dst_mode=0):
         # Call setters to ensure guard/action parents are set
         self.guard = guard
         self.actions = actions
         # Other variables, getters/setters not used
         self.id = id
-        self.source = source
-        self.destination = destination
+        self.source = src_mode
+        self.destination = dst_mode
         self.parent = None
     
     def __repr__(self):
@@ -402,6 +482,7 @@ class DAI:
     expr    - Equations in the form of SymPy Type
     '''
     def __init__(self, raw=None):
+        # Same as set_expression(raw)
         self.raw = raw
         self.expr = self.parse()
 
@@ -448,11 +529,47 @@ class Invariant:
         self.expr = None
         self.parent = None
 
+        # parse raw expression
+        self.parse()
+
     def __repr__(self):
         DISPLAY_INFO = "\n=== Invariant() ===\n"
         DISPLAY_INFO += "Raw Expression: {}\n".format(self.raw)
         DISPLAY_INFO += "SymPy Equation: {}\n".format(self.expr)
         return DISPLAY_INFO
+
+    def __call__(self, raw):
+        """ Update/Assign new expressions by directly calling an Invariant object. """
+        self.raw = raw
+        self.parse()
+
+    def parse(self):
+        """ Parsing Raw string and convert it to Expression """
+        if self.raw is None:
+            warnings.warn("[Invariant Warning]: No Expression.")
+            
+        eqns = self.raw.split('||')
+        expr = []
+        for eqn in eqns:
+            constructed = SymEq.construct_eqn(eqn, False, True)
+            if constructed is None:
+                temp_raw = self.raw
+                self.raw = None
+                raise Exception("[Invariant Error]: Invalid Syntax for Invariant: {}".format(temp_raw))
+            else:
+                expr.append(constructed)
+        self.expr = expr
+
+        # Filter out equations that evaluate to False
+        self.expr = filter(lambda eqn: eqn is not False, self.expr)
+        self.expr = list(self.expr)
+        if True in self.expr: 
+            temp_raw = self.raw
+            self.raw = None
+            self.expr = None
+            raise Exception("[Invariant Error]: Redundant Invariant: {}".format(temp_raw))
+
+        return
 
 
 class Guard:
@@ -465,16 +582,50 @@ class Guard:
     parent  - TODO: Add definition for this
     '''
     def __init__(self, raw=None):
-        self.raw = None
+        self.raw = raw
         self.expr = None
         self.parent = None
-        # Construct Equations
+
+        # parse raw expression
+        self.parse()
 
     def __repr__(self):
         DISPLAY_INFO = "\n=== Guard() ===\n"
         DISPLAY_INFO += "Raw Expression: {}\n".format(self.raw)
         DISPLAY_INFO += "SymPy Equation: {}\n".format(self.expr)
         return DISPLAY_INFO
+
+    def __call__(self, raw):
+        """ Update/Assign new expressions by directly calling a Guard object. """
+        self.raw = raw
+        self.parse()
+
+    def parse(self):
+        if self.raw is None:
+            warnings.warn("[Guard Warning]: No Expression.")
+
+        eqns = self.raw.split('&&')
+        expr = []
+        for eqn in eqns:
+            constructed = SymEq.construct_eqn(eqn, False, True)
+            if constructed is None:
+                temp_raw = self.raw
+                self.raw = None
+                raise Exception("[Guard Error]: Invalid Syntax for Guard: {}". format(temp_raw))
+            else:
+                expr.append(constructed)
+        self.expr = expr
+
+        # Filter out equations that evaluate to True
+        self.expr = filter(lambda eqn: eqn is not True, self.expr)
+        self.expr = list(self.expr)
+        if False in self.expr: 
+            temp_raw = self.raw
+            self.raw = None
+            self.expr = None
+            raise Exception("[Guard Error]: Redundant Guard: {}".format(temp_raw))
+        
+        return
 
 
 class Action:

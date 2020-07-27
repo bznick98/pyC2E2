@@ -249,7 +249,7 @@ class SymEq:
 
     @staticmethod
     def get_var_list(expressions):
-        """ given RAW expressions, extract all variables appeared in the expression """
+        """ given RAW inequality expressions, extract all variables appeared in the expression """
         varList = []
         for expr in expressions.split('&&'):
             eq = re.split('>|>=|<|<=|==', expr)
@@ -258,3 +258,28 @@ class SymEq:
         # remove duplicates
         varList = list(set(varList))
         return varList
+
+    # @staticmethod
+    # def get_eq_var_list(expressions):
+    #     """ given RAW equation expressions, extract all variables appeared in the expression """
+    #     varList = []
+    #     for expr in expressions.split('&&'):
+    #         eq = re.split('>|>=|<|<=|==', expr)
+    #         var = eq[0].strip()
+    #         varList.append(var)
+    #     # remove duplicates
+    #     varList = list(set(varList))
+    #     return varList
+
+    @staticmethod
+    def extract_matrix(mat_in, mat_eqn):
+        """ HELPER FUNCTION for initialize_cpp_model """
+        mat = []
+        for row, eqn in zip(mat_in, mat_eqn):
+            if(eqn[0] == '>='):
+                row_new = [float(-d) for d in row]
+            else:
+                row_new = [float(d) for d in row]
+            mat.extend(row_new)
+        return mat
+

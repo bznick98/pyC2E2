@@ -95,5 +95,9 @@ REFINEMENTSTRAT = 'Refinement Strategy'
 INITIALSET = 'Initial Set'
 UNSAFESET = 'Unsafe Set'
 
+# For initialize cpp model
+SIMULATE = 1
+VERIFY = 0
+
 # Debug Mode / LMB 06/226/2018 / Turn debug mode on or off
 DEBUG = False

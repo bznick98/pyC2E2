@@ -1,3 +1,11 @@
-**/.vscode
-**/.DS_Store
+**.vscode
+**.DS_Store
 **/__pycache__
+**.pyc
+**.egg_info
+work-dir/**
+!work-dir/output
+!work-dir/plotresult
+obj/**
+c2e2.egg-info
+venv

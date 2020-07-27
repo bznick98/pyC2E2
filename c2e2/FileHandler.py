@@ -5,9 +5,9 @@ import os
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
-from .Automaton import Automaton, Mode, DAI, Invariant, Transition, Guard, Action, Variable, ThinVariable
-from .Property import Property
-from .Set import RectangleSet
+from .automaton import Automaton, Mode, DAI, Invariant, Transition, Guard, Action, Variable, ThinVariable
+from .property import Property
+from .set import RectangleSet
 from .SymEq import SymEq
 from .constants import *
 
@@ -54,9 +54,13 @@ class FileHandler:
                 properties = FileHandler.open_hyxml_properties(hyxml_root)
 
             else:
-                raise Exception("Hyxml type is not 'Model'")
+                raise Exception("Hyxml type is not 'Model'") # TODO: Is this necessary?
+
+        # elif ext == 'other file format':
+            # can be implemented here
+        
         else:
-            raise Exception("Currently only support hyxml")
+            raise Exception("[Format Error]: No support for this file format.")
         
         return automata, properties
 
@@ -80,8 +84,6 @@ class FileHandler:
 
             name = auto.get("name")
             automaton = Automaton(name)
-            print("[NEW ROUND!!!!]")
-            print(automaton)
             
             # Load variables
             for var in auto.iterfind("variable"):
@@ -132,7 +134,6 @@ class FileHandler:
                 automaton.add_mode(mode_obj, mode_id)
             
             # MODE ID/Name CHECK
-            print("BEFORE VERIFYING MODEID!!")
             if not automaton.verify_mode_ids():
                 raise Exception("[AUTOMATON LOAD ERROR]: {}'s MODE IDs NOT UNIQUE!\n".format(automaton.name))
             if not automaton.verify_mode_names():
