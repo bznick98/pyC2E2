@@ -17,7 +17,7 @@ from .property import Property
 from .set import RectangleSet
 from .constants import *
 
-class Simulator:
+class Complete_Automata:
     '''
     TODO: Add definition for simulator
     '''

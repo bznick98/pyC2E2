@@ -1,5 +1,5 @@
-
-# Functionalities & Todos
+# c2e2lib-dev
+## Functionalities & Todos
 - Overall:
   - [x] Be able to load model from .hyxml file.
 
@@ -21,24 +21,23 @@
 - Verification
   - [ ] Not yet started.
 
-# Install
+## Install
 ```zsh
 # Clone this repo.
-git clone https://github.com/bznick98/pyC2E2.git
+git clone https://github.com/C2E2-Development-Team/c2e2lib-dev.git
 # Go to the project directory
-cd pyC2E2
-# Install the module into current directory
-pip install -e .
+cd c2e2lib-dev
 # Install all C++ Dependent Libraries (brew is for Mac)
 brew install ppl
 brew install eigen
 brew install glpk
 # Make C++ into a library
+# TODO: Some path in the Makefile are somehow hardcoded to work on my local computer.
 make
 ```
 
-# Use Cases
-## Loading from a .hyxml file
+## Use Cases
+### Loading from a .hyxml file
 ```python
 from c2e2 import *
 
@@ -52,7 +51,7 @@ print(automata)
 print(properties)
 ```
 
-## Operations of each Data Type:
+### Operations of each Data Type:
 - RectangleSet()
 ```python
 from c2e2 import *
@@ -88,15 +87,15 @@ D3("x = y + 5")
 
 ```
 
-# Full Example
+## Full Example
 - See `tests/linThermo.py`, it's an example constructed manually, produce same result as loading linThermo.hyxml then do simulation.
 
-# Some Urgent TODOs
-- [ ] Implement Unsafe Set Bound Checkings! (Avoid like x>5 && x<3).
+## Some Urgent TODOs
+- [ ] Add Unsafe Set Boundary Checkings. (Avoid like x>5 && x<3).
 
-# C++ lib Requirement:
+## C++ lib Requirement:
 ```zsh
-brew install ppl
-brew install eigen
-brew install glpk
+ppl
+eigen
+glpk
 ```

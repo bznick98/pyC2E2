@@ -30,7 +30,7 @@ class Automaton:
     transistion_list - all transitions of the automaton, a Transition() is from old_mode to new_mode
     '''
 
-    def __init__(self, name="default automaton"):
+    def __init__(self, name:str="default automaton"):
         self.name = name
         self.variable_list = []
         self.thinvar_list = []      # not too sure what thin var is

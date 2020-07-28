@@ -11,10 +11,6 @@ linThermo = Automaton("linThermo")
 x = Variable(name="x", type=REAL, scope=LOCAL)
 linThermo.add_variable(x)
 
-# Invariant
-h_inv = Invariant("x<75")
-c_inv = Invariant("x>65")
-
 # ================== Mode ===========================
 # Heating Mode
 heating = Mode(name="heating", id=0, isInitial=True)
@@ -25,7 +21,11 @@ cooling = Mode(name="cooling", id=1, isInitial=False)
 h1 = DAI("x_dot = 40-0.5*x")
 c1 = DAI("x_dot = 30-0.5*x")
 
-# Initial Set (Use One of Them)
+# Invariant
+h_inv = Invariant("x<75")
+c_inv = Invariant("x>65")
+
+# Initial Set
 init_set = RectangleSet("cooling: x>=68 && x<=72")
 unsafe_set = RectangleSet("x<=63")
 
