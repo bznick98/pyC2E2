@@ -32,8 +32,9 @@ class Simulator
     ~Simulator();
 
     int simulate();
-    int hybridSimulation();
-    int hybridSimulation(Point origin);
+    int simulate(bool unsafe_check);
+    int hybridSimulation(bool unsafe_check);
+    int hybridSimulation(Point origin, bool unsafe_check);
     void simulatePoint(Point point, int mode);
     void simulatePoint(Point point, int mode, int idx);
 
@@ -59,6 +60,8 @@ class Simulator
     void setVisualizeFilename(std::string str);
     std::string getExecutable();
     void setExecutable(std::string str);
+    std::string getWorkDir();
+    void setWorkDir(std::string str);
 
     LinearSet getInitialSet();
     void setInitialSet(LinearSet obj);
@@ -84,6 +87,7 @@ class Simulator
 
     std::string visualize_filename;    
     std::string executable;
+    std::string work_dir;
 
     LinearSet initial_set;
     LinearSet unsafe_set;

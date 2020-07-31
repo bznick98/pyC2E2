@@ -1,44 +1,50 @@
-
-# Functionalities & Todos
+# c2e2lib-dev
+## Functionalities & Todos
 - Overall:
   - [x] Be able to load model from .hyxml file.
+  - [x] Be able to load model from DryVR Black Box Model.
+  - [ ] Support reading DryVR inputFile (mode transition information).
+    - Question: It seems like in DryVR's inputFile, mode transition is based on time instead of guards, is it how DryVR is designed?
+  - [ ] File Path in the complete.py needs to be revised to support cross-platform
 
 - Automaton():
   - [ ] ...
 
 - RectangleSet()
-  - [x] RectangleSet(): Can be used to describe Initial Set & Unsafe Set
-  - [ ] Have InitialSet/UnsafeSet class inherit from RectangleSet() in order to declare those sets more easily.
+  - [x] RectangleSet(): Can be used to describe Initial Set & Unsafe Set.
+  - [ ] Is it better to have InitialSet/UnsafeSet class inherit from RectangleSet() so that we can declare those sets more explicitly?
   
 - DAI Equations()
   - [x] DAI(): Can be used to describe differential equations such as 'x_dot = y + 3'
 
 - Simulation
   - [x] Using C2E2 C++ Backend to do Simualtion
+  - [x] Read output from file into a 2d list 
   - [ ] Instead of wrapping all information into a Model(), maybe binding more C++ classes/functions for the python side to use.
   - [ ] Currently output is stored in a file, to speedup the program, maybe return the result directly back to Python.
 
 - Verification
   - [ ] Not yet started.
 
-# Install
+## Install
 ```zsh
 # Clone this repo.
-git clone https://github.com/bznick98/pyC2E2.git
+git clone https://github.com/C2E2-Development-Team/c2e2lib-dev.git
 # Go to the project directory
-cd pyC2E2
-# Install the module into current directory
+cd c2e2lib-dev
+# Install in the current directory (using pip3 if pip is python2)
 pip install -e .
 # Install all C++ Dependent Libraries (brew is for Mac)
 brew install ppl
 brew install eigen
 brew install glpk
 # Make C++ into a library
+# TODO: Some path in the Makefile are somehow hardcoded to work on my local computer.
 make
 ```
 
-# Use Cases
-## Loading from a .hyxml file
+## Use Cases
+### Loading from a .hyxml file
 ```python
 from c2e2 import *
 
@@ -52,7 +58,7 @@ print(automata)
 print(properties)
 ```
 
-## Operations of each Data Type:
+### Operations of each Data Type:
 - RectangleSet()
 ```python
 from c2e2 import *
@@ -88,15 +94,35 @@ D3("x = y + 5")
 
 ```
 
-# Full Example
-- See `tests/linThermo.py`, it's an example constructed manually, produce same result as loading linThermo.hyxml then do simulation.
+## Full Example
+### Construct by hand
+- See `use_cases/linThermo_manual.py`, it's an example constructed manually, produce same result as loading linThermo.hyxml then do simulation.
+- Run linThermo example by running: (In order to run all )
+  ```
+  cd use_cases
+  python3 linThermo_test.py
+  ```
+### Load from hyxml or DryVR file
+- See `use_cases/hyxml_examples` or `use_cases/dryVR_examples`, examples will load the model from files and perform simulate.
+- Run load model examples  
+  ```
+  cd use_cases/dryVR_examples/Thermostats
+  python3 dryVR_Thermo_test.py
+  ```
+  or 
+  ```
+  cd use_cases/hyxml_examples/linThermo
+  python3 linThermo_test.py
+  ```
 
-# Some Urgent TODOs
-- [ ] Implement Unsafe Set Bound Checkings! (Avoid like x>5 && x<3).
+## Some Urgent TODOs
+- [ ] Add Unsafe Set Boundary Checkings. (Avoid like x>5 && x<3).
+- [ ] I used string concatenate instead of os.path.join() to join file paths in source code, so it's likely won't work in Windows. In order to make it cross platform, file path problems need to be addressed.
+- [ ] Makefile is a problem, All of my C++ lib is installed by brew, so lots of the INCLUDE path points to `usr/local/Cellar/...`, which might not be the case for all users. Maybe use CMake to build as it's more intended for cross platform apps?
 
-# C++ lib Requirement:
+## C++ lib Requirement:
 ```zsh
-brew install ppl
-brew install eigen
-brew install glpk
+ppl
+eigen
+glpk
 ```

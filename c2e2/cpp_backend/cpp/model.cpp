@@ -45,13 +45,14 @@ int Model::simulateVerify()
     simulator.setTimeStep(time_step);
     simulator.setTimeHorizon(time_horizon);
     simulator.setExecutable(executable);
+    simulator.setWorkDir(work_dir);
 
     simulator.print();
 
     int safety;
     if (is_simulation)
     {
-        safety = simulator.simulate();
+        safety = simulator.simulate(sim_unsafe_check);
     }
     else
     {
@@ -102,6 +103,7 @@ void Model::printModel()
               << "-----------------------------" << std::endl;
     
     std::cout << "is_simulation: " << is_simulation << "\n"
+              << "sim_unsafe_check: " << sim_unsafe_check << "\n"
               << "refine_strat: " << refine_strat << "\n" 
               << "dimensions: " << dimensions << "\n"
               << "num_modes: " << num_modes << "\n"
@@ -145,6 +147,13 @@ bool Model::isSimulation()
 void Model::setSimulationBool(bool val)
 {
     is_simulation = val;
+}
+bool Model::simUnsafeCheck(){
+    // checking if simulation checks unsafe set 
+    return sim_unsafe_check;
+}            
+void Model::setSimUnsafeCheck(bool val){
+    sim_unsafe_check = val;
 }
 int Model::getRefineStrat()
 {
@@ -350,4 +359,12 @@ std::string Model::getExecutable()
 void Model::setExecutable(std::string val)
 {
     executable = val;
+}
+std::string Model::getWorkDir()
+{
+    return work_dir;
+}
+void Model::setWorkDir(std::string str)
+{
+    work_dir = str;
 }

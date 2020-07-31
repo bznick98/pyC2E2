@@ -25,6 +25,7 @@ BOOST_PYTHON_MODULE(libc2e2)
 
         // Intenger / Boolean
         .def("set_simulation_bool", &Model::setSimulationBool)
+        .def("set_sim_unsafe_check", &Model::setSimUnsafeCheck)
         .def("set_refine_strat", &Model::setRefineStrat)
         .def("set_linear_strat", &Model::setLinearStrat)
         .def("set_dimensions", &Model::setDimensions)
@@ -58,6 +59,7 @@ BOOST_PYTHON_MODULE(libc2e2)
         .def("set_opt_str", &Model::setOptStr)
         .def("set_visualize_filename", &Model::setVisualizeFilename)
         .def("set_executable", &Model::setExecutable)
+        .def("set_work_dir", &Model::setWorkDir)
     ;
 
     bp::class_<std::vector<int>>("IntegerVector")

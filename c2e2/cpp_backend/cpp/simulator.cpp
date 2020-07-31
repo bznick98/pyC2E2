@@ -33,10 +33,15 @@ Simulator::~Simulator()
 
 int Simulator::simulate()
 {
-    return hybridSimulation();
+    return hybridSimulation(true);
 }
 
-int Simulator::hybridSimulation()
+int Simulator::simulate(bool unsafe_check=true)
+{
+    return hybridSimulation(unsafe_check);
+}
+
+int Simulator::hybridSimulation(bool unsafe_check=true)
 {
     std::ofstream invFile;            // LMBTODO Need a better filename
     invFile.open(visualize_filename); //LMBTODO Need a better name for this too
@@ -50,7 +55,7 @@ int Simulator::hybridSimulation()
         std::cout << "Hybrid Simulation " << i + 1 << " -> Point: \n";
         pts[i].print();
 
-        is_safe = hybridSimulation(pts[i]);
+        is_safe = hybridSimulation(pts[i], unsafe_check);
 
         if (is_safe == -1)
         {
@@ -60,6 +65,10 @@ int Simulator::hybridSimulation()
         else if (is_safe == 1)
         {
             std::cout << "Hybrid Simulation " << i + 1 << " safe" << std::endl;
+        }
+        else if (is_safe == 0)
+        {
+            std::cout << "Hybrid Simulation " << i + 1 << " No safety check" << std::endl;
         }
 
         // LMBTODO What do we do in the event the simulation is not -1 or 1?
@@ -73,9 +82,12 @@ int Simulator::hybridSimulation()
     return is_safe;
 }
 
-int Simulator::hybridSimulation(Point origin)
+int Simulator::hybridSimulation(Point origin, bool unsafe_check=true)
 {
-    void *lib = dlopen("../work-dir/libhybridsim.so", RTLD_LAZY);
+    void *lib = dlopen((work_dir + "libhybridsim.so").c_str(), RTLD_LAZY);
+    if (!lib) {
+        std::cout << "Open libhybridsim.so Failed.\n";
+    }
     // LMBTODO handle failed library opening.
 
     typedef std::vector<std::pair<std::NNC_Polyhedron, int>> (*guard_fn)(int, double *, double *);
@@ -97,7 +109,7 @@ int Simulator::hybridSimulation(Point origin)
         ReachTube simulation_tube;
         simulation_tube.setDimensions(dimensions);
         simulation_tube.setMode(mode);
-        simulation_tube.parseInvariantTube("../work-dir/SimuOutput", 0);
+        simulation_tube.parseInvariantTube((work_dir + "SimuOutput").c_str(), 0);
 
         int size = simulation_tube.getSize();
         if (size == 0)
@@ -130,23 +142,30 @@ int Simulator::hybridSimulation(Point origin)
             }
         }
 
-        // LMBTODO: Why use trace_safe instead of using is_safe?
-        int trace_safe;
-        trace_safe = checker.checkHybridSimulation(simulation_tube, unsafe_set);
-        if (trace_safe == 1)
-        {
+        if (unsafe_check) {
+            // LMBTODO: Why use trace_safe instead of using is_safe?
+            int trace_safe;
+            trace_safe = checker.checkHybridSimulation(simulation_tube, unsafe_set);
+            if (trace_safe == 1)
+            {
+                simulation_tube.printReachTube(visualize_filename, 1);
+                is_safe = 1;
+            }
+            else if (trace_safe == -1)
+            {
+                simulation_tube.printReachTube(visualize_filename, 2);
+                is_safe = -1;
+                break;
+            }
+            else
+            {
+                std::cout << "<ERROR> UNKNOWN TUBE IN HYBRID SYSTEM" << std::endl;
+            }
+        } else if (!unsafe_check) {
+            // if unsafe_check == false, then don't check intersection with unsafe set, whole trace is wanted
+            std::cout << "VIZ FILENAME: " << visualize_filename << std::endl;
             simulation_tube.printReachTube(visualize_filename, 1);
-            is_safe = 1;
-        }
-        else if (trace_safe == -1)
-        {
-            simulation_tube.printReachTube(visualize_filename, 2);
-            is_safe = -1;
-            break;
-        }
-        else
-        {
-            std::cout << "<ERROR> UNKNOWN TUBE IN HYBRID SYSTEM" << std::endl;
+            is_safe = 0;
         }
 
         if (guards_hit.empty())
@@ -165,7 +184,7 @@ int Simulator::hybridSimulation(Point origin)
 void Simulator::simulatePoint(Point point, int mode)
 {
     std::ofstream simulation_config;
-    simulation_config.open("../work-dir/Config");
+    simulation_config.open((work_dir + "Config").c_str());
 
     for (int i = 0; i < point.getDimensions(); i++)
     {
@@ -178,8 +197,8 @@ void Simulator::simulatePoint(Point point, int mode)
     simulation_config << mode << "\n";
     simulation_config.close();
 
-    std::string exec_command = "./" + executable + " < ../work-dir/Config > " +
-                               "../work-dir/SimuOutput";
+    std::string exec_command = executable + " < " + work_dir + "Config > " + work_dir + 
+                               "SimuOutput";
     std::cout << "@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
     std::cout << exec_command << std::endl;
     system(exec_command.c_str());
@@ -188,7 +207,7 @@ void Simulator::simulatePoint(Point point, int mode)
 void Simulator::simulatePoint(Point point, int mode, int idx)
 {
     std::ofstream simulation_config;
-    simulation_config.open("../work-dir/Config");
+    simulation_config.open((work_dir + "Config").c_str());
 
     for (int i = 0; i < point.getDimensions(); i++)
     {
@@ -201,8 +220,8 @@ void Simulator::simulatePoint(Point point, int mode, int idx)
     simulation_config << mode << "\n";
     simulation_config.close();
 
-    std::string exec_command = "./" + executable + " < ../work-dir/Config > " +
-                               "../work-dir/SimuOutput" + std::to_string(idx);
+    std::string exec_command = executable + " < " + work_dir + "Config > " + work_dir + 
+                               "SimuOutput" + std::to_string(idx);
     std::cout << "@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
     std::cout << exec_command << std::endl;
     system(exec_command.c_str());
@@ -389,6 +408,14 @@ std::string Simulator::getExecutable()
 void Simulator::setExecutable(std::string str)
 {
     executable = str;
+}
+std::string Simulator::getWorkDir()
+{
+    return work_dir;
+}
+void Simulator::setWorkDir(std::string str)
+{
+    work_dir = str;
 }
 
 LinearSet Simulator::getInitialSet()

@@ -61,6 +61,11 @@ class RectangleSet(Set):
             self.aMatrix = Eq_Matrix[0]
             self.bMatrix = Eq_Matrix[1]
             self.eqMatrix = Eq_Matrix[2]
+        else:
+            # Default Value, No other meanings
+            self.aMatrix = []
+            self.bMatrix = []
+            self.eqMatrix = []
     
     def __call__(self, expression):
         """ Directly Calling the object will set input expression """

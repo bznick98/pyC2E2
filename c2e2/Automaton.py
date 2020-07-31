@@ -28,45 +28,105 @@ class Automaton:
     thinvar_list     - all Thin-variables in the automaton, a list of ThinVariable()
     mode_list        - all modes of the automaton, a list of Mode()
     transistion_list - all transitions of the automaton, a Transition() is from old_mode to new_mode
+    isBlackBox       - if False, it's a Automaton with explicit dynamics, otherwise it's a blackbox model
+    filename         - if isBlackBox == True, then this field is needed for importing the blackbox
+    TC_Simulate      - Function ptr to the TC_Simulate in blackbox file.
     '''
 
-    def __init__(self, name="default automaton"):
+    def __init__(self, name:str="default automaton", variable_list:list=[], thinvar_list:list=[], mode_list:list=[], transition_list:list=[], isBlackBox:bool=False, filename:str=None, TC_Simulate=None):
         self.name = name
-        self.variable_list = []
-        self.thinvar_list = []      # not too sure what thin var is
-        self.mode_list = []
-        self.transition_list = []
+        self.isBlackBox = isBlackBox
+        if not isBlackBox:
+            # C2E2 Automaton
+            self.variable_list = variable_list
+            self.thinvar_list = thinvar_list
+            self.mode_list = mode_list
+            self.transition_list = transition_list
+            # Var
+            for var in variable_list:
+                self.add_variable(var)
+            # ThinVar
+            for thinvar in thinvar_list:
+                self.add_thinvar(thinvar)
+            # Mode 
+            for mode in mode_list:
+                self.add_mode(mode)
+            # Transition
+            for tran in transition_list:
+                self.add_transition(tran)
+        else:
+            # DryVR Automaton, filename of the blackbox
+            self.filename = filename
+            self.TC_Simulate = TC_Simulate
 
     def __repr__(self):
         """ Display Automaton Info """
-        DISPLAY_INFO = \
-            "\n=== Automaton() ===\n" + \
-            "Name: {}\n".format(self.name) + \
-            "Variable List: {}\n".format(self.var_names) + \
-            "Mode List: {}\n".format(self.mode_names) + \
-            "Transition List: {}\n".format(self.transition_list)
+        DISPLAY_INFO = ''
+        if not self.isBlackBox:
+            DISPLAY_INFO += "\n=== Automaton() ===\n"
+            DISPLAY_INFO += "Name: {}\n".format(self.name)
+            DISPLAY_INFO += "Variable List: {}\n".format(self.var_names)
+            DISPLAY_INFO += "Mode List: {}\n".format(self.mode_names)
+            DISPLAY_INFO += "Transition List: {}\n".format(self.transition_list)
+        else:
+            # display dryVR
+            DISPLAY_INFO += "\n=== Automaton() (BlackBox) ===\n"
+            if self.filename is None:
+                DISPLAY_INFO += "Black Box Filename: No blackbox filename is given, please specify a file.\n"
+            else:
+                DISPLAY_INFO += "Black Box Filename: {}\n".format(self.filename)
         return DISPLAY_INFO
+
+    def __call__(self, **kwargs):
+        # TODO: Add type checking
+        for key, value in kwargs.items():
+            # 'self.key = value'
+            setattr(self, key, value)
 
     # Setters
     def add_variable(self, var):
         """ Add a variable to the automaton """
-        self.variable_list.append(var)
+        if isinstance(var, Variable):
+            self.variable_list.append(var)
+        else:
+            raise Exception("[Variable Error]: add_variable only takes Variable() Type")
         return
     
     def add_thinvar(self, thinvar):
         """ Add a thin variable to the automaton """
-        self.thinvar_list.append(thinvar)
+        if isinstance(thinvar, ThinVariable):
+            self.thinvar_list.append(thinvar)
+        else:
+            raise Exception("[ThinVar Error]: add_thinvar only takes ThinVariable() Type")
         return
 
-    def add_mode(self, mode, id=None):
-        """ Add a mode to automaton """
-        self.mode_list.append(mode)
+    def add_mode(self, mode, mode_id=None):
+        """ Add a mode to automaton, mode id is auto assigned if not specified"""
+        if isinstance(mode, Mode):
+            # assign mode id
+            if mode_id is not None:
+                # user specified id for this mode
+                mode.id = mode_id
+            else:    
+                mode.id = self.next_mode_id
+            self.mode_list.append(mode)
+            if not self.verify_mode_ids():
+                # TODO: Revert mode list append
+                raise Exception("[Mode ID Error]: Repeated Mode ID")
+        else:
+            raise Exception("[Mode Error]: add_mode only takes Mode() Type")
+
+
+
         # TODO: PARSE MODE & ALSO ADD VARIABLES TO Automaton
         return
 
     def add_transition(self, tran):
         """ Add a transition to automaton """
-        self.transition_list.append(tran)
+        if isinstance(tran, Transition):
+            self.transition_list.append(tran)
+        else:
+            raise Exception("[Transition Error]: add_transition only takes Transition() Type")
         return
 
         
@@ -75,142 +135,176 @@ class Automaton:
     @property
     def vars(self):
         """ Return all variable in a list """
-        return [var for var in self.variable_list]
+        if not self.isBlackBox:
+            return [var for var in self.variable_list]
 
     @property
     def var_names(self):
         """ Return all variable names in a list """
-        return [var.name for var in self.variable_list]
+        if not self.isBlackBox:
+            return [var.name for var in self.variable_list]
 
     @property
     def local_vars(self):
         """ Return all variable whose scope is 'LOCAL' in a list """
-        local_vars = []
-        for var in self.variable_list:
-            if var.scope == LOCAL:
-                local_vars.append(var)
-        return local_vars
+        if not self.isBlackBox:
+            local_vars = []
+            for var in self.variable_list:
+                if var.scope == LOCAL:
+                    local_vars.append(var)
+            return local_vars
     
     @property
     def local_var_names(self):
         """ Return all variable name whose scope is 'LOCAL' in a list """
-        return [var.name for var in self.local_vars]
+        if not self.isBlackBox:
+            return [var.name for var in self.local_vars]
 
     @property
     def input_vars(self):
         """ Return all variable whose scope is 'INPUT' in a list """
-        input_vars = []
-        for var in self.variable_list:
-            if var.scope == INPUT:
-                input_vars.append(var)
-        return input_vars
+        if not self.isBlackBox:
+            input_vars = []
+            for var in self.variable_list:
+                if var.scope == INPUT:
+                    input_vars.append(var)
+            return input_vars
     
     @property
     def input_var_names(self):
         """ Return all variable name whose scope is 'INPUT' in a list """
-        return [var.name for var in self.input_vars]
+        if not self.isBlackBox:
+            return [var.name for var in self.input_vars]
 
     @property
     def output_vars(self):
         """ Return all variable whose scope is 'OUTPUT' in a list """
-        output_vars = []
-        for var in self.variable_list:
-            if var.scope == OUTPUT:
-                output_vars.append(var)
-        return output_vars
+        if not self.isBlackBox:
+            output_vars = []
+            for var in self.variable_list:
+                if var.scope == OUTPUT:
+                    output_vars.append(var)
+            return output_vars
     
     @property
     def output_var_names(self):
         """ Return all variable name whose scope is 'OUTPUT' in a list """
-        return [var.name for var in self.output_vars]
+        if not self.isBlackBox:
+            return [var.name for var in self.output_vars]
 
     # ThinVariables
     @property
     def local_thinvars(self):
         """ Return all ThinVariable whose scope is 'LOCAL' in a list """
-        local_vars = []
-        for var in self.thinvar_list:
-            if var.scope == LOCAL:
-                local_vars.append(var)
-        return local_vars
+        if not self.isBlackBox:
+            local_vars = []
+            for var in self.thinvar_list:
+                if var.scope == LOCAL:
+                    local_vars.append(var)
+            return local_vars
     
     @property
     def local_thinvar_names(self):
         """ Return all variable name whose scope is 'LOCAL' in a list """
-        return [var.name for var in self.local_thinvars]
+        if not self.isBlackBox:
+            return [var.name for var in self.local_thinvars]
 
     @property
     def input_thinvars(self):
         """ Return all ThinVariable whose scope is 'INPUT' in a list """
-        input_vars = []
-        for var in self.thinvar_list:
-            if var.scope == INPUT:
-                input_vars.append(var)
-        return input_vars
+        if not self.isBlackBox:
+            input_vars = []
+            for var in self.thinvar_list:
+                if var.scope == INPUT:
+                    input_vars.append(var)
+            return input_vars
     
     @property
     def input_thinvar_names(self):
         """ Return all variable name whose scope is 'INPUT' in a list """
-        return [var.name for var in self.input_thinvars]
+        if not self.isBlackBox:
+            return [var.name for var in self.input_thinvars]
 
     @property
     def output_thinvars(self):
         """ Return all variable whose scope is 'OUTPUT' in a list """
-        output_vars = []
-        for var in self.thinvar_list:
-            if var.scope == OUTPUT:
-                output_vars.append(var)
-        return output_vars
+        if not self.isBlackBox:
+            output_vars = []
+            for var in self.thinvar_list:
+                if var.scope == OUTPUT:
+                    output_vars.append(var)
+            return output_vars
     
     @property
     def output_thinvar_names(self):
         """ Return all variable name whose scope is 'OUTPUT' in a list """
-        return [var.name for var in self.output_thinvars]
+        if not self.isBlackBox:
+            return [var.name for var in self.output_thinvars]
 
     # Modes
     @property
     def modes(self):
         """ Return all modes in a list """
-        return [mode for mode in self.mode_list]
+        if not self.isBlackBox:
+            return [mode for mode in self.mode_list]
 
     @property
     def mode_names(self):
         """ Return all mode names in a list """
-        return [mode.name for mode in self.mode_list]
+        if not self.isBlackBox:
+            return [mode.name for mode in self.mode_list]
+
+    @property
+    def next_mode_id(self):
+        """ Find next available mode id """
+        if not self.isBlackBox:
+            mode_ids = sorted([mode.id for mode in self.modes])
+            if len(mode_ids) == 0 or mode_ids[0] != 0:
+                return 0
+            for idx in range(len(mode_ids)-1):
+                id = mode_ids[idx]
+                next_id = mode_ids[idx+1]
+                if next_id - id > 1:
+                    return id + 1
+            # if all not available
+            return len(mode_ids)
 
     # TODO: Functions to REMOVE attributes from automaton
 
     # CHECKING automton validity
     def verify_mode_ids(self):
         """ Verify mode ids are unique within an Automaton """
-        id_set = set()
-        for mode in self.mode_list:
-            if mode.id in id_set:
-                return False
-            id_set.add(mode.id)
-        return True
+        if not self.isBlackBox:
+            id_set = set()
+            for mode in self.mode_list:
+                if mode.id in id_set:
+                    return False
+                id_set.add(mode.id)
+            return True
 
     def verify_mode_names(self):
         """ Verify mode names are unqiue with an Automaton """
-        name_set = set()
-        for mode in self.mode_list:
-            name = mode.name.strip()
-            if name in name_set:
-                return False
-            name_set.add(name)
-        return True
+        if not self.isBlackBox:
+            name_set = set()
+            for mode in self.mode_list:
+                name = mode.name.strip()
+                if name in name_set:
+                    return False
+                name_set.add(name)
+            return True
 
     def verify_transition_src_dest(self):
         """ Verify transition src and destination IDs """
-        id_set = set()
-        for mode in self.mode_list:
-            id_set.add(mode.id)
+        if not self.isBlackBox:
+            id_set = set()
+            for mode in self.mode_list:
+                id_set.add(mode.id)
 
-        for tran in self.transition_list:
-            if ((tran.source not in id_set) or 
-                (tran.destination not in id_set)):
-                return False
-        return True
+            for tran in self.transition_list:
+                if ((tran.source not in id_set) or 
+                    (tran.destination not in id_set)):
+                    return False
+            return True
 
 
 class Variable:

@@ -31,6 +31,8 @@ class Model
 
     bool isSimulation();
     void setSimulationBool(bool val);
+    bool simUnsafeCheck();            // checking if simulation checks unsafe set 
+    void setSimUnsafeCheck(bool val); 
     int getRefineStrat();
     void setRefineStrat(int val);
     int getDimensions();
@@ -85,10 +87,13 @@ class Model
     void setVisualizeFilename(std::string val);
     std::string getExecutable();
     void setExecutable(std::string val);
+    std::string getWorkDir();
+    void setWorkDir(std::string str);
     
   private:
 
     bool is_simulation;
+    bool sim_unsafe_check;  // indicate whether checking unsafe intersection or not
     int refine_strat; /** TODOLMB Refine strategy? */
     int linear_strat; /* Strategy used to bloat reachtube for linear model, 0 for gstar, 1 for rectangle */
     int dimensions;  /** Number of local variables */
@@ -118,6 +123,7 @@ class Model
     std::string opt_str;  // LMBTODO: Add to config, move to Simulator???
     std::string visualize_filename;
     std::string executable;
+    std::string work_dir;
 
     LinearSet initial_set;
     LinearSet unsafe_set;

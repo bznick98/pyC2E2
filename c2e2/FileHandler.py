@@ -52,17 +52,19 @@ class FileHandler:
                 # read automata and properties respectively
                 automata = FileHandler.open_hyxml_model(hyxml_root)
                 properties = FileHandler.open_hyxml_properties(hyxml_root)
-
+                return automata, properties
             else:
                 raise Exception("Hyxml type is not 'Model'") # TODO: Is this necessary?
 
-        # elif ext == 'other file format':
-            # can be implemented here
-        
+        elif ext == '.py':
+            # check if DryVR's TC_Simulate Function exists
+            TC_Simulate = FileHandler.get_func("TC_Simulate", base_name)
+            automaton = Automaton(name="Default DryVR Automaton", isBlackBox=True, filename=base_name, TC_Simulate=TC_Simulate)
+            return automaton
         else:
             raise Exception("[Format Error]: No support for this file format.")
         
-        return automata, properties
+        
 
     @staticmethod
     def open_hyxml_model(root):
@@ -92,8 +94,8 @@ class FileHandler:
                 v_type = var.get("type")
                
                 v = Variable(name=v_name, type=v_type, scope=v_scope)
-                # Variable CHECK
-                if v not in automaton.variable_list:
+                # Variable repetitive CHECK
+                if v not in automaton.vars:
                     automaton.add_variable(v)
                 else:
                     raise Exception("[AUTOMATON LOAD ERROR]: Variable " + v.name + " Already Exists!")
@@ -237,3 +239,28 @@ class FileHandler:
         for term in r_dict:
             eq = eq.replace(term, r_dict[term])
         return eq
+
+    @staticmethod
+    def read_from_output(file_path):
+        """ Read ReachTube Output in work-dir produced by ReachTube::printReachTube """
+        # Load data from file into 2D list
+        file_object = open(file_path, 'r')
+        lines = file_object.readlines()
+        data_points = []
+        for i in range(len(lines)):
+            points = lines[i].split()
+            if points[0] == '%':
+                continue
+            else:
+                data_points.append(points)
+
+        return data_points
+
+
+    @staticmethod
+    def get_func(func_name, file_name):
+        """ Return the function ptr if func exists in the module """
+        module_name = file_name.split('.')[0]
+        module = __import__(module_name)
+        func = getattr(module, func_name)
+        return func
